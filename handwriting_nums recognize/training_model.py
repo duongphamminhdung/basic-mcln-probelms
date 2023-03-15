@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 
 #import mnist dataset
-data = pd.read_csv("/Users/duongphamminhdung/Documents/GitHub/DATA SETS/mnist/mnist_test.csv", sep=',')
+data = pd.read_csv("D:\DocumentD\GitHub\DATA SETS\mnist\mnist_train.csv", sep=',')
 mnist = data.values
 label = mnist[:, 0]
 digits = mnist[:, 1:]
@@ -15,6 +15,7 @@ X_test = digits[-10:]
 Y_test = label[-10:]
 def normalize(X):
     X = X / 255
+    X -= np.mean(X, axis = 0)
     return X
 def find_target(Y):
     """
@@ -53,7 +54,7 @@ def calc_loss(x, y, W1, W2):
     x_activate=activate_func(x_1)   #x_activate batchsizex128
     x_2=(x_activate).dot(W2)        #x_2        batchsizex10
     cost=softmax(x_2)               #cost       batchsizex10
-    loss = (-np.mean(targets*np.log(cost)))*len(y) #batchsize, ()
+    loss = (-np.mean(targets*np.log(cost)))*len(y)/10 #batchsize, ()
     # print(x_2)
     return cost, loss
 def calc(x, y, W1, W2):
@@ -67,17 +68,17 @@ def calc(x, y, W1, W2):
     return cost, loss, update_1, update_2 
 
 
-epoch = 10000
+epoch = 2000
 acc = []
 losses = []
-lr = 0.01
-batch = 256
+lr = 0.005
+batch = 512
 i = 0
 W1 = np.random.randn(784, batch)
 W2 = np.random.randn(batch, 10)
 
 while i < epoch:
-    b = 1e-3
+    b = 1e-8
     i += 1
     sample=np.random.randint(0,X_train.shape[0],size=(batch))
     x=X_train[sample]
@@ -87,7 +88,7 @@ while i < epoch:
     
     category=np.argmax(out,axis=1)
     accuracy=(category[:, None]==y).mean()
-    acc.append(accuracy.item())
+    acc.append(accuracy.item()*100)
     # import ipdb; ipdb.set_trace()
     losses.append(loss)
     
@@ -95,12 +96,13 @@ while i < epoch:
     W1=W1-lr*(update_1 + b)
     W2=W2-lr*(update_2.T+ b)
     # import ipdb; ipdb.set_trace()
-    if i%100 == 0:
-        print("epoch", i, "accuracy:", acc[-1])
-        print("epoch", i, "loss:", losses[-1])
+    if i%50 == 0:
+        print("epoch", i, "accuracy:", acc[-1], "loss:", losses[-1])
 # test = softmax((activate_func(X_test.dot(W1))).dot(W2))
 # accuracy=(test==Y_test).mean().item()
 # print(f'Test accuracy = {accuracy:.4f}')
 plt.grid()
-plt.plot([i for i in range(1000)], losses)
+plt.plot([i for i in range(epoch)], losses, label="loss")
+plt.plot([i for i in range(epoch)], acc, label="accuracy")
+plt.legend(loc = 2)
 plt.show()

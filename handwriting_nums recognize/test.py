@@ -44,26 +44,6 @@ def calc(x, y, W1, W2):
     W1: 784x128
     W2: 128x10
     """
-<<<<<<< HEAD
-    targets = find_target(Y)        #target     128x10
-    x_1=X.dot(W1)                   #x_1        128x128
-    x_activate=activate_func(x_1)   #x_activate  128x128
-    x_2=(x_activate).dot(W2)        #x_2        128x10
-    cost=softmax(x_2)               #cost       128x10
-
-    loss = (np.sum(-targets*np.log(cost), axis = 1)/len(y))[..., None] #128, 1
-    update_2=x_activate.T@loss
-
-
-    loss=((W2).dot(loss.T)).T*(x_1) 
-
-    update_1=X.T@loss
-
-    return cost,update_1,update_2 
-
-W1 = np.random.randn(784, 128)
-W2 = np.random.randn(128, 10)
-=======
     targets = find_target(y)        #target     batchsizex10
     x_1=x.dot(W1)                   #x_1        batchsizex128
     x_activate=activate_func(x_1)   #x_activate batchsizex128
@@ -75,7 +55,6 @@ W2 = np.random.randn(128, 10)
     
       
     return cost, loss, update_1, update_2 
->>>>>>> 534cb77da0241c4d5db7f418a31d49445b62cfb8
 
 epoch = 1000
 acc = []
