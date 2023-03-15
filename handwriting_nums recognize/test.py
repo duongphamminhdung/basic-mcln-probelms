@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 #import mnist dataset
-data = pd.read_csv("/Users/duongphamminhdung/Documents/GitHub/DATA SETS/mnist/mnist_test.csv", sep=',')
+data = pd.read_csv("D:\DocumentD\GitHub\DATA SETS\mnist\mnist_train.csv", sep=',')
 mnist = data.values
 label = mnist[:, 0]
 digits = mnist[:, 1:]
@@ -48,11 +48,11 @@ def calc(X, Y, W1, W2):
     cost=softmax(x_2)               #cost       128x10
 
     loss = (np.sum(-targets*np.log(cost), axis = 1)/len(y))[..., None] #128, 1
-    import ipdb; ipdb.set_trace()
     update_2=x_activate.T@loss
 
 
-    loss=((W2).dot(loss.T)).T*(x_1)
+    loss=((W2).dot(loss.T)).T*(x_1) 
+
     update_1=X.T@loss
 
     return cost,update_1,update_2 
