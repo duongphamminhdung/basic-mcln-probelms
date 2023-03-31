@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 
 
@@ -72,7 +71,7 @@ epoch = 2000
 acc = []
 losses = []
 lr = 0.005
-batch = 512
+batch = 1024
 i = 0
 W1 = np.random.randn(784, batch)
 W2 = np.random.randn(batch, 10)
@@ -96,7 +95,7 @@ while i < epoch:
     W1=W1-lr*(update_1 + b)
     W2=W2-lr*(update_2.T+ b)
     # import ipdb; ipdb.set_trace()
-    if i%50 == 0:
+    if i%100 == 0:
         print("epoch", i, "accuracy:", acc[-1], "loss:", losses[-1])
 # test = softmax((activate_func(X_test.dot(W1))).dot(W2))
 # accuracy=(test==Y_test).mean().item()
