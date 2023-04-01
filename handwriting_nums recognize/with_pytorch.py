@@ -18,7 +18,8 @@ from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 transform = transforms.Compose(
-    [transforms.ToTensor()])
+    [transforms.ToTensor(),
+    transforms.Resize((112, 784))])
 
 # Store separate training and validations splits in ./data
 training_set = torchvision.datasets.MNIST('./data',
@@ -48,7 +49,7 @@ class MnistModel(nn.Module):
         self.linear2 = nn.Linear(256, 64)
         self.actfunc2 = nn.Sigmoid()
         self.linear3 = nn.Linear(64, 10)
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -84,7 +85,8 @@ def train_one_epoch(epoch_index, tb_writer):
         outputs = model(inputs)
         
         # Compute the loss and its gradients
-        loss = loss_fn(outputs, labels)
+        target = F.one_hot(labels)
+        loss = loss_fn(outputs, target)
         loss.backward()
         
         # Adjust learning weights
