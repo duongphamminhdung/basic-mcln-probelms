@@ -1,25 +1,23 @@
 # PyTorch model and training necessities
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-# Image datasets and image manipulation
-import torchvision
-import torchvision.transforms as transforms
-
 # Image display
 import matplotlib.pyplot as plt
 import numpy as np
-
+import torch
+import torch.multiprocessing
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+# Image datasets and image manipulation
+import torchvision
+import torchvision.transforms as transforms
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
-import torch.multiprocessing
+
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 from datetime import datetime
 
-batch = 16
+batch = 100
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -56,9 +54,9 @@ class MnistModel(nn.Module):
 
     def forward(self, x):
         x = self.linear1(x)
-        x = self.actfunc1(x)
+        # x = self.actfunc1(x)
         x = self.linear2(x)
-        x = self.actfunc2(x)
+        # x = self.actfunc2(x)
         x = self.linear3(x)
         x = self.softmax(x)
         return x
@@ -105,7 +103,7 @@ def train_one_epoch(epoch_index, tb_writer):
             tb_x = epoch_index * len(training_loader) + i + 1
             tb_writer.add_scalar('Loss/train', last_loss, tb_x)
             running_loss = 0.
-            
+
     return last_loss
 
 # Initializing in a separate cell so we can easily add more epochs to the same run
@@ -113,8 +111,9 @@ timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
 
 epoch_number = 0
-EPOCHS = 5
+EPOCHS = 10
 best_vloss = 1_000_000.
+accs = []
 for epoch in range(EPOCHS):
     print('EPOCH {}:'.format(epoch_number + 1))
     
@@ -132,10 +131,11 @@ for epoch in range(EPOCHS):
         voutputs = model(vinputs)
         vloss = loss_fn(voutputs, vlabels)
         running_vloss += vloss
-    
+
+        predict_labels = torch.argmax(voutputs, dim=1)
+        accs.append('accuracy: {}'.format((predict_labels==vlabels).sum()))
+        # import ipdb; ipdb.set_trace()
     avg_vloss = running_vloss / (i + 1)
-    print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))
-    
     # Log the running loss averaged per batch
     # for both training and validation
     writer.add_scalars('Training vs. Validation Loss',
@@ -144,10 +144,10 @@ for epoch in range(EPOCHS):
     writer.flush()
     
     # Track best performance, and save the model's state
-    if avg_vloss < best_vloss:
+    if avg_vloss < best_vloss and epoch==10:
         best_vloss = avg_vloss
         model_path = 'model_{}_{}'.format(timestamp, epoch_number)
-        torch.save(model.state_dict(), model_path)
+        torch.save(model.state_dict(), "weights/"+model_path)
     
     epoch_number += 1
-
+    print('max accuracy: {}'.format(max(accs)))
