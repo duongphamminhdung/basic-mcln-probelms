@@ -18,14 +18,14 @@ from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 transform = transforms.Compose(
-    [transforms.ToTensor(),
-    transforms.Resize((112, 784))])
+    [transforms.ToTensor(),])
 
 # Store separate training and validations splits in ./data
 training_set = torchvision.datasets.MNIST('./data',
     download=True,
     train=True,
     transform=transform)
+print(training_set)
 validation_set = torchvision.datasets.MNIST('./data',
     download=True,
     train=False,
@@ -49,7 +49,7 @@ class MnistModel(nn.Module):
         self.linear2 = nn.Linear(256, 64)
         self.actfunc2 = nn.Sigmoid()
         self.linear3 = nn.Linear(64, 10)
-        self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.Softmax()
 
     def forward(self, x):
         x = self.linear1(x)
@@ -72,9 +72,11 @@ for i, data in enumerate(training_loader):
     # Zero your gradients for every batch!
     optimizer.zero_grad()
     
-    # Make predictions for this batch
+    inputs = torch.reshape(inputs, (4, 1, 784))
     outputs = model(inputs)
     
-    # Compute the loss and its gradients
-    target = F.one_hot(labels)
-    print(outputs.shape, target.shape)
+    target = F.one_hot(labels, 10)
+    # print(outputs.shape, target.shape)
+    print(inputs.shape, labels.shape)
+    print(target[:])
+    break

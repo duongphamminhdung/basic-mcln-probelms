@@ -14,13 +14,16 @@ import numpy as np
 
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 from datetime import datetime
 
+batch = 16
+
 transform = transforms.Compose(
     [transforms.ToTensor(),
-    transforms.Resize((112, 784))])
-
+])
 # Store separate training and validations splits in ./data
 training_set = torchvision.datasets.MNIST('./data',
     download=True,
@@ -32,13 +35,13 @@ validation_set = torchvision.datasets.MNIST('./data',
     transform=transform)
 
 training_loader = torch.utils.data.DataLoader(training_set,
-                                              batch_size=4,
+                                              batch_size=batch,
                                               shuffle=True,
                                               num_workers=2)
 
 
 validation_loader = torch.utils.data.DataLoader(validation_set,
-                                                batch_size=4,
+                                                batch_size=batch,
                                                 shuffle=False,
                                                 num_workers=2)
 class MnistModel(nn.Module):
@@ -82,10 +85,12 @@ def train_one_epoch(epoch_index, tb_writer):
         optimizer.zero_grad()
         
         # Make predictions for this batch
+        inputs = torch.reshape(inputs, (batch, 784))
         outputs = model(inputs)
         
         # Compute the loss and its gradients
-        target = F.one_hot(labels)
+        # target = F.one_hot(labels, 10)
+        target = labels
         loss = loss_fn(outputs, target)
         loss.backward()
         
@@ -123,6 +128,7 @@ for epoch in range(EPOCHS):
     running_vloss = 0.0
     for i, vdata in enumerate(validation_loader):
         vinputs, vlabels = vdata
+        vinputs = torch.reshape(vinputs, (batch, 784))
         voutputs = model(vinputs)
         vloss = loss_fn(voutputs, vlabels)
         running_vloss += vloss
