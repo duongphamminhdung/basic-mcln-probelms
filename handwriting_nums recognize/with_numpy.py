@@ -1,10 +1,14 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import platform
 
 
 #import mnist dataset
-data = pd.read_csv("/mnt/d/DocumentD/GitHub/DATA SETS/mnist/mnist_train.csv")
+if platform.system() == 'Windows':
+    data = pd.read_csv("/mnt/d/DocumentD/GitHub/DATA SETS/mnist/mnist_train.csv")
+else:
+    data=pd.read_csv('/Users/duongphamminhdung/Documents/GitHub/DATA SETS/mnist/mnist_train.csv')
 mnist = data.values
 label = mnist[:, 0]
 digits = mnist[:, 1:]
@@ -46,7 +50,7 @@ def d_softmax(x):
     return ez/np.sum(ez,axis=0)*(1-ez/np.sum(ez,axis=0))
 
 def activate_func(Z):
-    #activate
+    #sigmoid
     Z = 1/(np.exp(-Z)+1)    
     return Z
 def d_sigmoid(x):
@@ -55,13 +59,13 @@ def d_sigmoid(x):
 
 def calc_loss(x, y, W1, W2):
     """ 
-    X, Y : 128x784
-    W1: 784x128
-    W2: 128x10
+    X, Y : batchx784
+    W1: 784xbatch
+    W2: batchx10
     """
     targets = find_target(y)        #target     batchsizex10
     x_1=x.dot(W1)                   #x_1        batchsizex128
-    x_activate=activate_func(x_1)   #x_activate batchsizex128
+    x_activate=(x_1)   #x_activate batchsizex128
     x_2=(x_activate).dot(W2)        #x_2        batchsizex64
     cost=softmax(x_2)               #cost       batchsizex10
     loss = (-np.mean(targets*np.log(cost)))*len(y)/10 #batchsize, ()
@@ -74,6 +78,7 @@ def calc(x, y, W1, W2):
     d_loss = 1/2 * (loss - loss_)**2
     update_1=(x).T.dot(d_loss)
     update_2=((activate_func(x.dot(W1))).dot(W2)).T.dot(d_loss)
+
     # import ipdb; ipdb.set_trace()
 
     
@@ -83,8 +88,8 @@ def calc(x, y, W1, W2):
 iter = 10000
 acc = []
 losses = []
-lr = 0.005
-batch = 512
+lr = 0.01
+batch = 16
 i = 0
 W1 = np.random.randn(784, batch)
 W2 = np.random.randn(batch, 10)
@@ -100,8 +105,8 @@ while i < iter:
     out,loss, update_1,update_2= calc(x, y, W1, W2)   
     
     category=np.argmax(out,axis=1)
-    accuracy=(category[:, None]==y).mean()
-    acc.append(accuracy.item()*100)
+    accuracy=(np.sum(category[:, None]==y)*100)/batch
+    acc.append(accuracy)
     # import ipdb; ipdb.set_trace()
     losses.append(loss)
     
@@ -109,7 +114,7 @@ while i < iter:
     W1=W1-lr*(update_1 + b)
     W2=W2-lr*(update_2.T+ b)
     if i%100 == 0:
-        print("epoch", i, "accuracy:", acc[-1], "loss:", losses[-1], "predict:", np.sum(category[:, None]==y))
+        print("iter", i, "accuracy:", (np.sum(category[:, None]==y)*100)/batch, "loss:", losses[-1])
         # import ipdb; ipdb.set_trace()
 
 # test = softmax((activate_func(X_test.dot(W1))).dot(W2))
