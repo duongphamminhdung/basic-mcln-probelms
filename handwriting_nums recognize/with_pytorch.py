@@ -144,9 +144,9 @@ for epoch in range(EPOCHS):
     writer.flush()
     
     # Track best performance, and save the model's state
-    if avg_vloss < best_vloss and epoch==10:
+    if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        model_path = 'model_{}_{}'.format(timestamp, epoch_number)
+        model_path = 'best_model_{}'.format(timestamp, epoch_number)
         torch.save(model.state_dict(), "weights/"+model_path)
     
     epoch_number += 1
