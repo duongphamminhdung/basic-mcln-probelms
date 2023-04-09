@@ -1,21 +1,19 @@
-def my_generator(n):
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+from torchvision import transforms
+from matplotlib import pyplot as plt
+from datetime import datetime
 
-    # initialize counter
-    value = 0
+batch=16
+training_set = torchvision.datasets.MNIST('./data',download=True,train=True,transform=transforms.ToTensor())
+validation_set = torchvision.datasets.MNIST('./data',download=True,train=False,transform=transforms.ToTensor())
 
-    # loop until counter is less than n
-    while value < n-1:
+training_loader = torch.utils.data.DataLoader(training_set,batch_size=batch,shuffle=True)
+validation_loader = torch.utils.data.DataLoader(validation_set,batch_size=batch,shuffle=False)
 
-        # produce the current value of the counter
-        yield value
-
-        # increment the counter
-        value += 1
-        print("hehe", value)
-
-# iterate over the generator object produced by my_generator
-for value in my_generator(4):
-
-    # print each value produced by generator
-    print(value)
-
+for inputs, targets in training_loader:
+    print(inputs.shape, targets.shape)
+    print(targets)
+    break
