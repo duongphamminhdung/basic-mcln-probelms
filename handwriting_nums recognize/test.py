@@ -1,18 +1,54 @@
+import cv2
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision
-from torchvision import transforms
-from matplotlib import pyplot as plt
-from datetime import datetime
+import glob
+import os
+from tqdm import tqdm
 
+path = '/Users/duongphamminhdung/Documents/GitHub/basic mcln probelms/handwriting_nums recognize/data/'
+ls = glob.glob(os.path.join(path, "*", '*.png'))
+batch = 4
+# for j in range(0, len(l), batch):
+#     a = []
+#     for k in range(batch):
+#         if j*batch + k >= len(l):
+#             print(len(ls))
+#             break
+        
+#         a.append(l[j*batch + k])
+#     ls.append(a)
 
-training_set = torchvision.datasets.MNIST('./data',download=True,train=True,transform=transforms.ToTensor())
-validation_set = torchvision.datasets.MNIST('./data',download=True,train=False,transform=transforms.ToTensor())
+def get_item(index):
+    if (index+1)*batch >= len(ls):
+        return False
+    val = ls[index*batch : (index+1)*batch]
+    image = []
+    for image_path in val:
+        # print(image_path)
+        img = cv2.imread(image_path, -1)
+        image.append(torch.Tensor(img))
+        
+    return image
 
-training_loader = torch.utils.data.DataLoader(training_set,batch_size=batch,shuffle=True)
-validation_loader = torch.utils.data.DataLoader(validation_set,batch_size=batch,shuffle=False)
+def my_generator(ls, batch):
 
-for inputs, targets in training_loader:
-    print(inputs.shape, targets.shape)
-    break
+    # initialize counter
+    value = 0
+    # loop until counter is less than n
+    for value in range(len(ls)//batch):
+
+        try:
+            res = get_item(value)
+        except IndexError:
+            break
+        
+        yield res
+
+        # increment the counter
+
+# iterate over the generator object produced by my_generator
+for value in tqdm(my_generator(ls, batch), total=len(ls)//batch):
+
+    # print each value produced by generator
+    pass
+print(len(ls))
+print(len(my_generator(ls, batch)))
